@@ -25,19 +25,19 @@ ARG RUNTIME_GID_UID
 
 # Install build dependencies
 RUN apk add --no-cache \
-	build-base \
-	curl-dev \
-	curl-static \
-	openssl-dev \
-	openssl-libs-static \
-	zlib-static \
-	brotli-static \
-	zstd-static \
-	nghttp2-static \
-	nghttp3-static \
-	libpsl-static \
-	libidn2-static \
-	libunistring-static
+  build-base \
+  curl-dev \
+  curl-static \
+  openssl-dev \
+  openssl-libs-static \
+  zlib-static \
+  brotli-static \
+  zstd-static \
+  nghttp2-static \
+  nghttp3-static \
+  libpsl-static \
+  libidn2-static \
+  libunistring-static
 
 # Copy source code
 WORKDIR /src
@@ -48,9 +48,9 @@ RUN make STATIC=1 && strip --strip-all tddns
 
 # Prepare rootfs for scratch
 RUN mkdir -p /rootfs/etc/ssl/certs /rootfs/var/run && \
-	cp /etc/ssl/certs/ca-certificates.crt /rootfs/etc/ssl/certs/ && \
-	cp /src/tddns /rootfs/tddns && \
-	chown -R "${RUNTIME_GID_UID}" /rootfs
+  cp /etc/ssl/certs/ca-certificates.crt /rootfs/etc/ssl/certs/ && \
+  cp /src/tddns /rootfs/tddns && \
+  chown -R "${RUNTIME_GID_UID}" /rootfs
 
 ########################################
 # Runtime stage
@@ -64,14 +64,14 @@ USER ${RUNTIME_GID_UID}
 ENTRYPOINT ["/tddns"]
 
 LABEL org.opencontainers.image.title="tddns" \
-	org.opencontainers.image.description="A Tiny DDNS daemon for Cloudflare" \
-	org.opencontainers.image.authors="Henrique Almeida <me@h3nc4.com>" \
-	org.opencontainers.image.vendor="Henrique Almeida" \
-	org.opencontainers.image.licenses="AGPL-3.0-or-later" \
-	org.opencontainers.image.url="https://h3nc4.com" \
-	org.opencontainers.image.source="https://github.com/h3nc4/tddns" \
-	org.opencontainers.image.documentation="https://github.com/h3nc4/tddns/blob/main/README.md" \
-	org.opencontainers.image.version="${VERSION}" \
-	org.opencontainers.image.revision="${COMMIT_SHA}" \
-	org.opencontainers.image.created="${BUILD_DATE}" \
-	org.opencontainers.image.ref.name="${VERSION}"
+  org.opencontainers.image.description="A Tiny DDNS daemon for Cloudflare" \
+  org.opencontainers.image.authors="Henrique Almeida <me@h3nc4.com>" \
+  org.opencontainers.image.vendor="Henrique Almeida" \
+  org.opencontainers.image.licenses="AGPL-3.0-or-later" \
+  org.opencontainers.image.url="https://h3nc4.com" \
+  org.opencontainers.image.source="https://github.com/h3nc4/tddns" \
+  org.opencontainers.image.documentation="https://github.com/h3nc4/tddns/blob/main/README.md" \
+  org.opencontainers.image.version="${VERSION}" \
+  org.opencontainers.image.revision="${COMMIT_SHA}" \
+  org.opencontainers.image.created="${BUILD_DATE}" \
+  org.opencontainers.image.ref.name="${VERSION}"
