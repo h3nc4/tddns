@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: apt-get install --no-install-recommends -y gcc libc6-dev libcurl4-openssl-dev make pkg-config
       - name: Run github/codeql-action/init
-        uses: github/codeql-action/init@c793b717bc78562f491db7b0e93a3a178b099162 # v4
+        uses: github/codeql-action/init@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
         with:
           languages: c-cpp
           build-mode: manual
@@ -41,6 +41,6 @@ jobs:
           CC: gcc
         run: make clean all
       - name: Run github/codeql-action/analyze
-        uses: github/codeql-action/analyze@c793b717bc78562f491db7b0e93a3a178b099162 # v4
+        uses: github/codeql-action/analyze@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
         with:
           category: "/language:c"
