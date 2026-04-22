@@ -15,7 +15,7 @@ jobs:
     name: Build Development Binary
     runs-on: ubuntu-latest
     container:
-      image: debian:trixie-slim@sha256:e02d6676e4dc2633fe045d6435d6039396736055976136f71ee5b77498f96fcf
+      image: debian:trixie-slim@sha256:cedb1ef40439206b673ee8b33a46a03a0c9fa90bf3732f54704f99cb061d2c5a
     steps:
       - name: Run actions/checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
