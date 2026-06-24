@@ -18,7 +18,7 @@ jobs:
       image: debian:trixie-slim@sha256:28de0877c2189802884ccd20f15ee41c203573bd87bb6b883f5f46362d24c5c2
     steps:
       - name: Run actions/checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Update repositories
         run: apt-get update
       - name: Install dependencies
@@ -42,7 +42,7 @@ jobs:
             echo "TAGS=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:latest" >>$GITHUB_OUTPUT
           fi
       - name: Run actions/checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Run docker/setup-buildx-action
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
       - name: Run docker/login-action
