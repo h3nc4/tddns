@@ -54,6 +54,7 @@ enum
   MAX_TOKEN_LEN = 256,
   MAX_DOMAIN_LEN = 256,
   HTTP_TIMEOUT_SEC = 20,
+  HTTP_CONNECT_TIMEOUT_SEC = 5,
   MAX_PATH_LEN = 512
 };
 
@@ -145,6 +146,9 @@ static volatile sig_atomic_t g_running = 1;
 
 /* System & Utils */
 static void handle_signal (int sig);
+static int abort_on_signal (void *clientp, curl_off_t dltotal,
+                            curl_off_t dlnow, curl_off_t ultotal,
+                            curl_off_t ulnow);
 static void log_msg (LogLevel level, const char *fmt, ...);
 static void sleep_interruptible (int seconds);
 NODISCARD static bool write_pid_file (void);
@@ -198,6 +202,23 @@ handle_signal (int sig)
 {
   (void)sig;
   g_running = 0;
+}
+
+/* curl progress callback, used only to notice a signal. The main loop cannot
+   test g_running until curl_easy_perform returns, which is up to
+   HTTP_TIMEOUT_SEC away and so outlives the grace period of `docker stop`. An
+   in-flight request therefore has to abort itself: returning non-zero makes
+   curl_easy_perform fail with CURLE_ABORTED_BY_CALLBACK. */
+static int
+abort_on_signal (void *clientp, curl_off_t dltotal, curl_off_t dlnow,
+                 curl_off_t ultotal, curl_off_t ulnow)
+{
+  (void)clientp;
+  (void)dltotal;
+  (void)dlnow;
+  (void)ultotal;
+  (void)ulnow;
+  return g_running ? 0 : 1;
 }
 
 static void
@@ -479,6 +500,10 @@ perform_http_request (const char *url, HttpMethod method, const char *token,
   curl_easy_setopt (curl, CURLOPT_WRITEDATA, (void *)resp);
   curl_easy_setopt (curl, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt (curl, CURLOPT_TIMEOUT, (long)HTTP_TIMEOUT_SEC);
+  curl_easy_setopt (curl, CURLOPT_CONNECTTIMEOUT,
+                    (long)HTTP_CONNECT_TIMEOUT_SEC);
+  curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0L);
+  curl_easy_setopt (curl, CURLOPT_XFERINFOFUNCTION, abort_on_signal);
   curl_easy_setopt (curl, CURLOPT_USERAGENT, "tddns/1.0");
 
   if (method == HTTP_PATCH)
