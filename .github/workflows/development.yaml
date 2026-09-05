@@ -18,7 +18,7 @@ jobs:
       image: debian:trixie-slim@sha256:d7e12182ce18b85b93007c1dedf31f2d29e01ccf3182cc4017c709b6259bc132
     steps:
       - name: Run actions/checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Update repositories
         run: apt-get update
       - name: Install dependencies
@@ -30,19 +30,21 @@ jobs:
     name: Build Runtime Container
     runs-on: ubuntu-latest
     steps:
+      - name: Run actions/checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Prepare metadata
         id: meta
         run: |
-          echo "PUSH=${{ github.ref == 'refs/heads/main' }}" >>$GITHUB_OUTPUT
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          echo "SHORT_SHA=$SHORT_SHA" >>$GITHUB_OUTPUT
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "TAGS=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:latest,${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:$SHORT_SHA" >>$GITHUB_OUTPUT
-          else
-            echo "TAGS=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:latest" >>$GITHUB_OUTPUT
+          image="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+          tags="${image}:latest"
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            tags="${tags},${image}:$(echo "${GITHUB_SHA}" | cut -c1-7)"
           fi
-      - name: Run actions/checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+          {
+            echo "PUSH=${{ github.ref == 'refs/heads/main' }}"
+            echo "IMAGE=${image}"
+            echo "TAGS=${tags}"
+          } >>"$GITHUB_OUTPUT"
       - name: Run docker/setup-buildx-action
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
       - name: Run docker/login-action
