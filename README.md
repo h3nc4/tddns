@@ -2,26 +2,27 @@
 
 `tddns` is a Tiny DDNS daemon for Cloudflare.
 
-## Overview
+## Run with Docker
 
-`tddns` periodically checks the public IPv4 and/or IPv6 address of the host it is running on. If the address has changed since the last check, it updates the corresponding DNS record in Cloudflare via their API and persists the last known IP addresses in local state files to avoid unnecessary API calls.
+Use network mode `host` to enable IPv6 support. The container is built from scratch and contains
+only the static binary and SSL certificates.
 
-If any network errors occur, the daemon waits and retries, gradually increasing the wait time to avoid API rate limits.
+```console
+docker run -d \
+  --network host \
+  -e CF_TOKEN="your_token_here" \
+  -e DOMAIN="sub.example.com" \
+  -e RECORD_TYPE="BOTH" \
+  h3nc4/tddns
+```
 
-## Configuration
+`CF_TOKEN` is the only value that needs any setting up. The [Cloudflare token](#cloudflare-token)
+section covers the permissions it needs, and [Environment variables](#environment-variables)
+covers the rest.
 
-`tddns` reads its configuration from environment variables.
+## Cloudflare token
 
-| Variable      | Default | Description                                        |
-| ------------- | ------- | -------------------------------------------------- |
-| `CF_TOKEN`    | (none)  | **Required**. Your Cloudflare API Token.           |
-| `DOMAIN`      | (none)  | **Required**. The full FQDN to update              |
-| `RECORD_TYPE` | `A`     | `A` for IPv4, `AAAA` for IPv6, or `BOTH`.          |
-| `INTERVAL`    | `300`   | Time in seconds between checks. Defaults to 5 min. |
-
-### Creating a Cloudflare Token
-
-To use `tddns`, create a scoped API token with the following steps:
+`tddns` needs a scoped API token, created with the following steps.
 
 ```none
 In Cloudflare dashboard, go to  Profile -> API Tokens -> Create Token -> Create Custom Token
@@ -33,26 +34,18 @@ Zone Resources:
 Include -> Specific zone -> mydomain.com
 ```
 
-## Usage
+## Environment variables
 
-### Docker
+`tddns` reads its configuration from environment variables.
 
-The container is built from scratch and contains only the static binary and SSL certificates.
+| Variable      | Default | Description                                        |
+| ------------- | ------- | -------------------------------------------------- |
+| `CF_TOKEN`    | (none)  | **Required**. Your Cloudflare API Token.           |
+| `DOMAIN`      | (none)  | **Required**. The full FQDN to update              |
+| `RECORD_TYPE` | `A`     | `A` for IPv4, `AAAA` for IPv6, or `BOTH`.          |
+| `INTERVAL`    | `300`   | Time in seconds between checks. Defaults to 5 min. |
 
-Use network mode `host` to enable IPv6 support.
-
-```console
-docker run -d \
-  --network host \
-  -e CF_TOKEN="your_token_here" \
-  -e DOMAIN="sub.example.com" \
-  -e RECORD_TYPE="BOTH" \
-  h3nc4/tddns
-```
-
-### Native
-
-If you prefer running natively, follow these steps:
+## Running natively
 
 ```console
 export CF_TOKEN="your_token_here"
@@ -62,6 +55,12 @@ export RECORD_TYPE="BOTH"
 ```
 
 `tddns` attempts to write state files to `/var/run/`. If running as a non-root user locally, ensure the user has write permissions to the working directory or modify the source paths.
+
+## How it works
+
+`tddns` periodically checks the public IPv4 and/or IPv6 address of the host it is running on. If the address has changed since the last check, it updates the corresponding DNS record in Cloudflare via their API and persists the last known IP addresses in local state files to avoid unnecessary API calls.
+
+If any network errors occur, the daemon waits and retries, gradually increasing the wait time to avoid API rate limits.
 
 ## Development
 
