@@ -4,8 +4,9 @@
 
 ## Run with Docker
 
-Use network mode `host` to enable IPv6 support. The container is built from scratch and contains
-only the static binary and SSL certificates.
+The container is built from scratch and holds the static binary plus a CA bundle, nothing else.
+
+`--network host` is what lets the daemon see the host's own addresses. On a bridge network it would read the container's address instead and publish that to DNS.
 
 ```console
 docker run -d \
@@ -16,9 +17,7 @@ docker run -d \
   h3nc4/tddns
 ```
 
-`CF_TOKEN` is the only value that needs any setting up. The [Cloudflare token](#cloudflare-token)
-section covers the permissions it needs, and [Environment variables](#environment-variables)
-covers the rest.
+`CF_TOKEN` and `DOMAIN` are both required and neither has a default. `CF_TOKEN` is the one that needs creating, and [Cloudflare token](#cloudflare-token) covers the permissions to give it. [Environment variables](#environment-variables) covers the rest.
 
 ## Cloudflare token
 
@@ -54,19 +53,23 @@ export RECORD_TYPE="BOTH"
 ./tddns
 ```
 
-`tddns` attempts to write state files to `/var/run/`. If running as a non-root user locally, ensure the user has write permissions to the working directory or modify the source paths.
+`tddns` writes `ddns.pid` and `ddns.state` into a runtime directory it picks for itself. Inside a container, or as root, that is `/var/run`. Run by an ordinary user on a host, it uses `XDG_RUNTIME_DIR` and falls back to `/tmp`, so no path needs preparing by hand.
 
 ## How it works
 
 `tddns` periodically checks the public IPv4 and/or IPv6 address of the host it is running on. If the address has changed since the last check, it updates the corresponding DNS record in Cloudflare via their API and persists the last known IP addresses in local state files to avoid unnecessary API calls.
 
-If any network errors occur, the daemon waits and retries, gradually increasing the wait time to avoid API rate limits.
+A network error puts the daemon into a retry that doubles its wait, from 5 seconds up to a ceiling of one hour, which keeps a long outage from spending the Cloudflare rate limit.
+
+The address itself comes from `api.ipify.org` over IPv4 and `api6.ipify.org` over IPv6.
 
 ## Development
 
-To start developing `tddns`, install libcurl4-openssl-dev and build with `make`.
+`tddns` is one C file against libcurl. On Debian and Devuan the header package is `libcurl4-openssl-dev`, then `make`.
 
 ## License
+
+<!-- vale off -->
 
 tddns is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
