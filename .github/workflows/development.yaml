@@ -58,6 +58,8 @@ jobs:
         run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >>"${GITHUB_OUTPUT}"
       - name: Build Container
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           context: .
           file: ./Dockerfile
