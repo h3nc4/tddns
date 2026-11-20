@@ -37,9 +37,6 @@ jobs:
         run: |
           image="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
           tags="${image}:latest"
-          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
-            tags="${tags},${image}:$(echo "${GITHUB_SHA}" | cut -c1-7)"
-          fi
           {
             echo "PUSH=${{ github.ref == 'refs/heads/main' }}"
             echo "IMAGE=${image}"
