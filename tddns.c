@@ -297,7 +297,8 @@ fopen_tddns (const char *path, const char *mode)
     {
       return fopen (path, mode);
     }
-  int fd = open (path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  int fd = open (path, O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW,
+                 S_IRUSR | S_IWUSR);
   if (fd == -1)
     {
       return NULL;
