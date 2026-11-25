@@ -293,14 +293,17 @@ sleep_interruptible (int seconds)
 NODISCARD static FILE *
 fopen_tddns (const char *path, const char *mode)
 {
-  int flags
-      = strcmp (mode, "w") == 0 ? O_WRONLY | O_CREAT | O_TRUNC : O_RDONLY;
-  int fd = open (path, flags | O_NOFOLLOW, S_IRUSR | S_IWUSR);
+  if (strcmp (mode, "w") != 0)
+    {
+      return fopen (path, mode);
+    }
+  int fd = open (path, O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW,
+                 S_IRUSR | S_IWUSR);
   if (fd == -1)
     {
       return NULL;
     }
-  FILE *f = fdopen (fd, mode);
+  FILE *f = fdopen (fd, "w");
   if (!f)
     {
       close (fd);
@@ -347,7 +350,7 @@ write_pid_file (void)
 static void
 load_state_ips (CloudflareState *state)
 {
-  FILE *f = fopen_tddns (g_state_file, "r");
+  FILE *f = fopen (g_state_file, "r");
   if (!f)
     {
       return;
